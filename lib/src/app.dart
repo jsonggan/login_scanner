@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:login_scanner/src/auth/auth_view.dart';
+import 'package:login_scanner/src/display_user/api_response_model.dart';
+import 'package:login_scanner/src/display_user/display_user_view.dart';
 import 'package:login_scanner/src/scan/scan_view.dart';
 
 import 'sample_feature/sample_item_details_view.dart';
@@ -69,14 +71,16 @@ class MyApp extends StatelessWidget {
               settings: routeSettings,
               builder: (BuildContext context) {
                 switch (routeSettings.name) {
-                  case SettingsView.routeName:
-                    return SettingsView(controller: settingsController);
                   case AuthView.routeName:
                     return const AuthView();
                   case ScanViews.routeName:
                     return const ScanViews();
+                  case DisplayUserView.routeName:
+                    // Assuming you are passing the AttendeeResponse object
+                    final attendeeResponse = routeSettings.arguments as AttendeeResponse;
+                    return DisplayUserView(attendeeResponse: attendeeResponse);
                   default:
-                    return const AuthView();
+                    return const ScanViews();
                 }
               },
             );
