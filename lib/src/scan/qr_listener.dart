@@ -44,7 +44,7 @@ class _QrReaderViewState extends State<QrReaderView> {
         } else {
           // logic to make call for user login status
           // Extract parameters from finalCode
-          var uri = Uri.parse('https://cimbwealthsymposium.com/?event_qr_code=1&ticket_id=5176&event_id=4591&security_code=faca84815d&path=wp-json%2Ftribe%2Ftickets%2Fv1%2Fqr');
+          var uri = Uri.parse(finalCode);
           var queryParams = uri.queryParameters;
 
           // Extracted parameters
@@ -56,8 +56,6 @@ class _QrReaderViewState extends State<QrReaderView> {
 
           // API key
           String apiKey = 'e04e6b86';
-
-          
 
           // Construct API URL
           var apiUrl = Uri.parse('https://cimbwealthsymposium.com/$path')
@@ -104,19 +102,20 @@ class _QrReaderViewState extends State<QrReaderView> {
       } else {
         // Check if the key is a character key
         final String keyLabel = key.keyLabel;
-        if (keyLabel.length == 1 && event.data is RawKeyEventDataAndroid) {
-          final RawKeyEventDataAndroid data = event.data as RawKeyEventDataAndroid;
-          String char = keyLabel;
-          
-          // Handle shift key for capitalization
-          if (data.isShiftPressed) {
-            char = char.toUpperCase();
-          } else {
-            char = char.toLowerCase();
-          }
-          
+        // Check if the keyLabel is a special character and handle accordingly
+        if (keyLabel == 'Shift Left') {
+          // Append the corresponding character for 'Shift Left'
           setState(() {
-            _scannedCode += char;
+            _scannedCode += '%2F'; // '%2F' is the URL encoding for '/'
+          });
+        } else if (keyLabel == 'Space') {
+          setState(() {
+            _scannedCode += '+'; // '+' is the URL encoding for space
+          });
+        } else {
+          // Append the regular character
+          setState(() {
+            _scannedCode += keyLabel;
           });
         }
       }
@@ -129,7 +128,10 @@ class _QrReaderViewState extends State<QrReaderView> {
       autofocus: true,
       focusNode: _focusNode,
       onKey: _handleKey,
-      child: Container(),
+      child: Container(child: Padding(
+        padding: const EdgeInsets.all(60.0),
+        child: Text(_scannedCode),
+      ),),
     );
   }
 }
