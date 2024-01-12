@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:login_scanner/src/auth/auth_button_view.dart';
 import 'package:login_scanner/src/auth/auth_text_field_view.dart';
@@ -30,9 +31,12 @@ class _AuthFieldState extends State<AuthField> {
     });
   }
 
-  void _signIn() {
+  void _signIn() async {
     // call to api
     if (_url.isNotEmpty && _api_key.isNotEmpty) {
+      final storage = new FlutterSecureStorage();
+      await storage.write(key: 'url', value: _url);
+      await storage.write(key: 'api_key', value: _api_key);
       Navigator.pushReplacementNamed(context, '/scan');
     } else {
       Fluttertoast.showToast(

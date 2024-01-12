@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:login_scanner/src/display_user/api_response_model.dart';
 import 'package:login_scanner/src/display_user/display_user_view.dart';
 import 'package:login_scanner/src/layouts/admin_setup_layout.dart';
@@ -10,6 +11,7 @@ import 'package:login_scanner/src/scan/qr_listener.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:flutter_barcode_listener/flutter_barcode_listener.dart';
 import 'package:http/http.dart' as http;
+import 'package:fluttertoast/fluttertoast.dart';
 
 
 class ScanViews extends StatefulWidget {
@@ -22,6 +24,23 @@ class ScanViews extends StatefulWidget {
 }
 
 class _ScanViewsState extends State<ScanViews> {
+  final storage = FlutterSecureStorage();
+  String url = '';
+  String api_key = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCredentials();
+  }
+
+  Future<void> _loadCredentials() async {
+    url = await storage.read(key: 'url') ?? '';
+    api_key = await storage.read(key: 'api_key') ?? '';
+    print(url + api_key );
+    setState(() {}); // Update the UI after loading the credentials
+  }
+
   String? _barcode;
   late bool visible;
   @override
@@ -38,6 +57,15 @@ class _ScanViewsState extends State<ScanViews> {
           child: BarcodeKeyboardListener(
             bufferDuration: Duration(milliseconds: 200),
             onBarcodeScanned: (barcode) async{
+              Fluttertoast.showToast(
+                msg: "Making request to server...",
+                toastLength: Toast.LENGTH_LONG,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.black87,
+                textColor: Colors.white,
+                fontSize: 16.0
+              );
               setState(() {
                 _barcode = barcode;
               });
@@ -52,7 +80,7 @@ class _ScanViewsState extends State<ScanViews> {
               } else {
                 // logic to make call for user login status
                 // Extract parameters from finalCode
-                var uri = Uri.parse('https://cimbwealthsymposium.com/wp-json/tribe/tickets/v1/qr?event_qr_code=1&ticket_id=4877&event_id=4591&security_code=ecf9cfc19c&api_key=e04e6b86');
+                var uri = Uri.parse(barcode);
                 var queryParams = uri.queryParameters;
 
                 // Extracted parameters
@@ -63,10 +91,12 @@ class _ScanViewsState extends State<ScanViews> {
                 String path = queryParams['path'] ?? '';
 
                 // API key
-                String apiKey = 'e04e6b86';
+                String apiKey = api_key;
+
+                String baseUrl = url[url.length - 1] == '/' ? url : url + '/';
 
                 // Construct API URL
-                var apiUrl = Uri.parse('https://cimbwealthsymposium.com/$path')
+                var apiUrl = Uri.parse('$baseUrl$path')
                   .replace(queryParameters: {
                     'event_qr_code': eventQrCode,
                     'ticket_id': ticketId,
@@ -74,6 +104,10 @@ class _ScanViewsState extends State<ScanViews> {
                     'security_code': securityCode,
                     'api_key': apiKey
                   });
+
+                setState() {
+                  _barcode = apiUrl.toString();
+                }
 
                 print(apiUrl);
                 var response;
@@ -95,6 +129,10 @@ class _ScanViewsState extends State<ScanViews> {
                 AttendeeResponse attendeeResponse = AttendeeResponse.fromJson(jsonDecode(response.body));
 
                 print(attendeeResponse.message);
+                // setState() {
+                //   _barcode = attendeeResponse.message;
+                // }
+                Fluttertoast.cancel();
 
 
                 Navigator.pushNamed(
@@ -114,10 +152,10 @@ class _ScanViewsState extends State<ScanViews> {
                   "Scan User Qr Code",
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                Text(
-                  _barcode == null ? 'SCAN BARCODE' : 'BARCODE: $_barcode',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                )
+                // Text(
+                //   _barcode == null ? 'SCAN BARCODE' : 'BARCODE: $_barcode',
+                //   style: Theme.of(context).textTheme.headlineSmall,
+                // )
               ],
             ),
           ),
