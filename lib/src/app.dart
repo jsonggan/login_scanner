@@ -107,6 +107,7 @@ class _MyAppState extends State<MyApp> {
                     
                 }
               },
+              maintainState: false,
             );
           },
         );

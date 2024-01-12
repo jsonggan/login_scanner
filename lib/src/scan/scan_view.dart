@@ -12,6 +12,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:flutter_barcode_listener/flutter_barcode_listener.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 
 class ScanViews extends StatefulWidget {
@@ -27,6 +28,7 @@ class _ScanViewsState extends State<ScanViews> {
   final storage = FlutterSecureStorage();
   String url = '';
   String api_key = '';
+  bool visibleLoading = false;
 
   @override
   void initState() {
@@ -68,6 +70,7 @@ class _ScanViewsState extends State<ScanViews> {
               );
               setState(() {
                 _barcode = barcode;
+                visibleLoading = true;
               });
               if (!visible) return;
               print('check here');
@@ -156,6 +159,23 @@ class _ScanViewsState extends State<ScanViews> {
                 //   _barcode == null ? 'SCAN BARCODE' : 'BARCODE: $_barcode',
                 //   style: Theme.of(context).textTheme.headlineSmall,
                 // )
+                visibleLoading ? 
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Loading",style: Theme.of(context).textTheme.headlineSmall,),
+                      SizedBox(width: 10,),
+                      SpinKitPouringHourGlass(
+                        color: Colors.black,
+                        size: 50.0,
+                      )
+                    ],
+                  ),
+                ) 
+                : 
+                Container(), 
               ],
             ),
           ),
